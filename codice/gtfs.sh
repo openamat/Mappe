@@ -43,3 +43,5 @@ ogr2ogr -f geojson "$cartellaLavoro/output/stops.geojson" "$cartellaLavoro/outpu
 rm "$cartellaLavoro/output/fermate.vrt"
 rm "$cartellaLavoro/output/stops.csv"
 
+# creo un file spatialite
+ogr2ogr -f SQLite -dsco SPATIALITE=YES "$cartellaLavoro/output/$nomeFile.sqlite" "$cartellaLavoro/output/stops.geojson"
