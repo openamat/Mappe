@@ -1,3 +1,3 @@
-Le **Unità di Primo Livello** del Comune di Palermofurono istituite con delibera n° 420 del 21 dicembre 1976 e  corrispondono a zone socio-urbanistiche ben distinte del tessuto urbano. Le utilizzerò come prima griglia di confronto per confrontare la rete dei trasporti su gomma con la popolazione delle UPL.
+Le **Unità di Primo Livello** del Comune di Palermo furono istituite con delibera n° 420 del 21 dicembre 1976 e  corrispondono a zone socio-urbanistiche ben distinte del tessuto urbano. Le utilizzerò come prima griglia di confronto per confrontare la rete dei trasporti su gomma con la popolazione delle UPL.
 
 L'occasione è buona per ringraziare 	il "Settore Sviluppo Strategico - U.O. studi e ricerche statistiche" e in particolare il dott. Girolamo D'Anneo, da cui provengono i dati sulla popolazione per UPL (censimento ISTAT 2011).
