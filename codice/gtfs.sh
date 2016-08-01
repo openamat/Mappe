@@ -35,8 +35,11 @@ cp "$cartellaLavoro/$nomeFile/shapes.txt" "$cartellaLavoro/output/shapes.csv"
 # creo il geojson delle rotte
 rm "$cartellaLavoro/output/shapes.geojson"
 ogr2ogr -f geojson "$cartellaLavoro/output/shapes.geojson" "$cartellaLavoro/output/shapes.csv" -dialect SQLite -sql "SELECT *, MakeLine(MakePoint(CAST(shape_pt_lon AS float),CAST(shape_pt_lat AS float))) FROM shapes GROUP BY shape_id"
+rm "$cartellaLavoro/output/shapes.csv"
 
 # creo il geojson delle fermate
 rm "$cartellaLavoro/output/stops.geojson"
 ogr2ogr -f geojson "$cartellaLavoro/output/stops.geojson" "$cartellaLavoro/output/fermate.vrt"
+rm "$cartellaLavoro/output/fermate.vrt"
+rm "$cartellaLavoro/output/stops.csv"
 
