@@ -35,7 +35,7 @@
       <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="centroidi_UPL20160803202605631" name="centroidi_UPL">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer expanded="1" checked="Qt::Checked" id="quartieri20160803153604446" name="quartieri">
+      <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="quartieri20160803153604446" name="quartieri">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="UPL_201120160803153559341" name="UPL_2011">
@@ -98,6 +98,7 @@
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="virtual_layer20160803154625712"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="centroidi_UPL20160803154957765"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="provala20160803164122569"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="prova_120160803225539845"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:32632" srcDatumTransform="-1" destDatumTransform="-1" layerid="Zone_cont_2015_WGS8420160801180314678"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Intersezione20160802145354696"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Centroidi20160802143351543"/>
@@ -186,9 +187,9 @@
           <legendlayerfile isInOverview="0" layerid="centroidi_UPL20160803202605631" visible="0"/>
         </filegroup>
       </legendlayer>
-      <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="quartieri" showFeatureCount="0">
+      <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="quartieri" showFeatureCount="0">
         <filegroup open="true" hidden="false">
-          <legendlayerfile isInOverview="0" layerid="quartieri20160803153604446" visible="1"/>
+          <legendlayerfile isInOverview="0" layerid="quartieri20160803153604446" visible="0"/>
         </filegroup>
       </legendlayer>
       <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="UPL_2011" showFeatureCount="0">
@@ -5475,14 +5476,12 @@ group by id,nome
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
       </edittypes>
-      <renderer-v2 attr="" forceraster="0" symbollevels="0" type="graduatedSymbol" graduatedMethod="GraduatedColor" enableorderby="0">
-        <ranges/>
-        <symbols/>
-        <source-symbol>
+      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
+        <symbols>
           <symbol alpha="1" clip_to_extent="1" type="fill" name="0">
             <layer pass="0" class="SimpleFill" locked="0">
               <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="color" v="166,144,219,255"/>
+              <prop k="color" v="187,94,133,255"/>
               <prop k="joinstyle" v="bevel"/>
               <prop k="offset" v="0,0"/>
               <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
@@ -5494,10 +5493,9 @@ group by id,nome
               <prop k="style" v="solid"/>
             </layer>
           </symbol>
-        </source-symbol>
+        </symbols>
         <rotation/>
         <sizescale scalemethod="diameter"/>
-        <labelformat format=" %1 - %2 " trimtrailingzeroes="false" decimalplaces="4"/>
       </renderer-v2>
       <labeling type="simple"/>
       <customproperties/>
@@ -5526,7 +5524,7 @@ group by id,nome
         <multilineenabled fieldname="" on=""/>
         <selectedonly on=""/>
       </labelattributes>
-      <annotationform></annotationform>
+      <annotationform>.</annotationform>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <attributeactions default="-1"/>
@@ -5538,10 +5536,10 @@ group by id,nome
           <column width="-1" hidden="1" type="actions"/>
         </columns>
       </attributetableconfig>
-      <editform></editform>
+      <editform>.</editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
-      <editforminitfilepath></editforminitfilepath>
+      <editforminitfilepath>.</editforminitfilepath>
       <editforminitcode><![CDATA[]]></editforminitcode>
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
@@ -5919,14 +5917,16 @@ group by id,nome
       <DefaultSnapToleranceUnit type="int">2</DefaultSnapToleranceUnit>
       <LayerSnappingList type="QStringList">
         <value>UPL_201120160803153559341</value>
+        <value>centroidi_UPL20160803202605631</value>
         <value>quartieri20160803153604446</value>
         <value>rotte_bus20160802235435416</value>
         <value>rotte_tram20160802235215411</value>
+        <value>v_quartieri_pop201120160803203757189</value>
         <value>v_stops_bus20160802221741478</value>
         <value>v_stops_tram20160802221002444</value>
-        <value>centroidi_UPL20160803202605631</value>
       </LayerSnappingList>
       <LayerSnappingEnabledList type="QStringList">
+        <value>enabled</value>
         <value>enabled</value>
         <value>enabled</value>
         <value>enabled</value>
@@ -5945,8 +5945,10 @@ group by id,nome
         <value>2</value>
         <value>2</value>
         <value>2</value>
+        <value>2</value>
       </LayerSnappingToleranceUnitList>
       <LayerSnapToList type="QStringList">
+        <value>to_vertex</value>
         <value>to_vertex</value>
         <value>to_vertex</value>
         <value>to_vertex</value>
@@ -5958,6 +5960,7 @@ group by id,nome
       <DefaultSnapType type="QString">to vertex</DefaultSnapType>
       <DefaultSnapTolerance type="double">6</DefaultSnapTolerance>
       <LayerSnappingToleranceList type="QStringList">
+        <value>6.000000</value>
         <value>6.000000</value>
         <value>6.000000</value>
         <value>6.000000</value>
