@@ -29,7 +29,7 @@
     </layer-tree-group>
     <layer-tree-group expanded="1" checked="Qt::PartiallyChecked" name="Quartieri e UPL">
       <customproperties/>
-      <layer-tree-layer expanded="1" checked="Qt::Checked" id="centroidi_UPL20160803154957765" name="centroidi_UPL">
+      <layer-tree-layer expanded="1" checked="Qt::Checked" id="centroidi_UPL20160803202605631" name="centroidi_UPL">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer expanded="1" checked="Qt::Checked" id="quartieri20160803153604446" name="quartieri">
@@ -42,7 +42,7 @@
     <layer-tree-layer expanded="1" checked="Qt::Checked" id="pop_UPL_2011_PA20160803153602039" name="pop_UPL_2011_PA">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="OSM_TF_Transport_Dark20160803183644371" name="OSM TF Transport Dark">
+    <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="OSM_TF_Transport_Dark20160803183644371" name="OSM TF Transport Dark">
       <customproperties/>
     </layer-tree-layer>
   </layer-tree-group>
@@ -82,6 +82,7 @@
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="cucu20160803171201151"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rotte20160802104203242"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="virtual_layer20160803154650115"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="centroidi_UPL20160803202605631"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="centroidi_UPL20160803154856577"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rotte_bus20160802104857889"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Intersezione20160802143937036"/>
@@ -140,8 +141,8 @@
       <item>UPL_201120160803153559341</item>
       <item>pop_UPL_2011_PA20160803153602039</item>
       <item>quartieri20160803153604446</item>
-      <item>centroidi_UPL20160803154957765</item>
       <item>OSM_TF_Transport_Dark20160803183644371</item>
+      <item>centroidi_UPL20160803202605631</item>
     </custom-order>
   </layer-tree-canvas>
   <legend updateDrawingOrder="true">
@@ -172,7 +173,7 @@
     <legendgroup open="true" checked="Qt::PartiallyChecked" name="Quartieri e UPL">
       <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="centroidi_UPL" showFeatureCount="0">
         <filegroup open="true" hidden="false">
-          <legendlayerfile isInOverview="0" layerid="centroidi_UPL20160803154957765" visible="1"/>
+          <legendlayerfile isInOverview="0" layerid="centroidi_UPL20160803202605631" visible="1"/>
         </filegroup>
       </legendlayer>
       <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="quartieri" showFeatureCount="0">
@@ -191,9 +192,9 @@
         <legendlayerfile isInOverview="0" layerid="pop_UPL_2011_PA20160803153602039" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="OSM TF Transport Dark" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="OSM TF Transport Dark" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="OSM_TF_Transport_Dark20160803183644371" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="OSM_TF_Transport_Dark20160803183644371" visible="0"/>
       </filegroup>
     </legendlayer>
   </legend>
@@ -684,8 +685,8 @@ def my_form_open(dialog, layer, feature):
         <xmax>13.41826387968322543</xmax>
         <ymax>38.20046461599886101</ymax>
       </extent>
-      <id>centroidi_UPL20160803154957765</id>
-      <datasource>?layer=spatialite:dbname%3D%27C%3A%2FUsers%2FSalvatore%2FDesktop%2Famat_feed_gtfs_v10%2Fquar_upl_palermo.sqlite%27%20table%3D%22upl_2011%22%20%28geom%29%20sql%3D:UPL_2011:UTF-8&amp;query=select%20id,UPL,nome,%20centroid%20(geometry)%20as%20geom%20from%20UPL_2011&amp;uid=id&amp;geometry=geom:1:4326</datasource>
+      <id>centroidi_UPL20160803202605631</id>
+      <datasource>?layer=spatialite:dbname%3D%27C%3A%5CUsers%5CSalvatore%5CDesktop%5CMappe%5CWIP_map_v1%5Cquar_upl_palermo.sqlite%27%20table%3D%22upl_2011%22%20%28geom%29%20sql%3D:UPL_2011:UTF-8&amp;query=select%20id,UPL,nome,%20centroid%20(geometry)%20as%20geom%20from%20UPL_2011&amp;uid=id&amp;geometry=geom:1:4326</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -703,7 +704,7 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <provider encoding="UTF-8">virtual</provider>
-      <previewExpression>COALESCE( "id", '&lt;NULL>' )</previewExpression>
+      <previewExpression></previewExpression>
       <vectorjoins/>
       <layerDependencies/>
       <expressionfields/>
@@ -5753,13 +5754,13 @@ routes AS r on r.route_id == t.route_id
     <Digitizing>
       <DefaultSnapToleranceUnit type="int">2</DefaultSnapToleranceUnit>
       <LayerSnappingList type="QStringList">
+        <value>UPL_201120160803153559341</value>
+        <value>quartieri20160803153604446</value>
         <value>rotte_bus20160802235435416</value>
         <value>rotte_tram20160802235215411</value>
         <value>v_stops_bus20160802221741478</value>
         <value>v_stops_tram20160802221002444</value>
-        <value>UPL_201120160803153559341</value>
-        <value>quartieri20160803153604446</value>
-        <value>centroidi_UPL20160803154957765</value>
+        <value>centroidi_UPL20160803202605631</value>
       </LayerSnappingList>
       <LayerSnappingEnabledList type="QStringList">
         <value>enabled</value>
