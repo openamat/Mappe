@@ -1,0 +1,557 @@
+--- 
+title: "GTFS Palermo"
+author: "Patrick Hausmann"
+date: "`r format(Sys.time(), '%a %b %d %X %Y')`"
+output:
+  html_document:
+    css: style.css
+    fig_caption: yes
+    highlight: tango
+    keep_md: yes
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 3
+  github_document:
+    html_preview: yes
+    toc: yes
+    toc_depth: 3
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load some libraries
+
+```{r Setup, message=FALSE, warning=FALSE}
+
+library('broom')
+library('classInt')
+library('dplyr')
+library('ggplot2')
+library('gplots')
+library('gtfsr')
+library('httr')
+library('leaflet')
+library('maptools')
+library('rbokeh')
+library('readr')
+library('rgdal')
+library('rgeos')
+library('sp')
+library('tidyr')
+library('viridis')
+
+```
+
+```{r fun}
+
+amat_url <- "https://github.com/openamat/Official-Data/blob/master/amat_feed_gtfs.zip?raw=true"
+
+cl_int <- function(x) { classIntervals(x, n = 5, style = "hclust", method = "complete") }
+
+set_date <- function(x) { as.POSIXct(paste("2016/08/01", x), tz = "CET") }
+
+arr_t_diff <- function(x) { round(as.numeric(difftime(x, lag(x), units = "mins")), 1) }
+
+map_upl <- function(upl, df) {
+  
+  brks <- print(round(cl_int(df$n_stops)$brks, 0))
+  
+  gg_dat <- left_join(upl, df, by=c('id'='UPL')) %>%
+            mutate(gr_stops = cut(n_stops,
+                                  breaks = brks,
+                                  right = FALSE, 
+                                  include.lowest = TRUE))
+
+  ggplot(gg_dat) +
+       aes(long, lat, group=group, fill =  gr_stops) + 
+       geom_polygon() +
+       geom_path(color = "white") +
+       coord_map() +
+       #scale_fill_viridis() + 
+       ggtitle("Number of stations - Le Unità di Primo Livello (UPL)")
+
+}
+
+map_buf <- function(dat_poly, dat_path, dat_point, title = NULL) {
+  
+  gg <- ggplot() + 
+         geom_polygon(data = dat_poly, aes(x=long, y=lat, group=group), 
+                      fill = "grey75", color = "white") +  
+         geom_path(data = dat_path, aes(x=long, y=lat, group=group), 
+                      color = "blue", alpha = 0.5) + 
+         geom_point(data = dat_point, aes(x=longitude, y=latitude), 
+                      color="red", size = 0.2) + 
+         coord_map() + 
+         ggtitle(title)
+
+  return(gg)
+
+}
+
+```
+
+# Import the GTFS file
+
+```{r Import_web, eval = TRUE}
+
+load_amat <- function(x) {
+  
+  if (!dir.exists("amat_gtfs")) {
+    dir.create("amat_gtfs")
+  }
+  
+  if (!file.exists(file.path("amat_gtfs", "amat.rdata"))) {
+    
+    message("AMAT GTFS file does not exist locally.\nStart download from GitHub 'openamat/Official-Data'")
+      z <- httr::GET(x, write_disk(file.path("amat_gtfs", "amat_feed_gtfs.zip")))
+      stop_for_status(z)
+      amat <- import_gtfs(file.path("amat_gtfs", "amat_feed_gtfs.zip"), local = TRUE)
+      save(amat, file = file.path("amat_gtfs", "amat.rdata"))
+      return(amat)
+    
+  } else {
+    message("Load local AMAT GTFS file")
+      load("amat_gtfs/amat.rdata")
+      return(amat)
+  }
+}  
+
+amat <- load_amat(amat_url)
+
+```
+
+# Match UPL
+
+```{r match_upl}
+
+match_UPL <- function(stop_df, shp) {
+
+    s_df <- tbl_df(stop_df) %>%
+                rename(longitude = stop_lon, 
+                       latitude  = stop_lat) %>%
+                as.data.frame()
+
+    coordinates(s_df) <- ~longitude+latitude
+    proj4string(s_df) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
+    out <- over(s_df, shp, fn = NULL)
+    return(out)
+}
+
+pmo <- readOGR(dsn = "../dati/comunePalermo/UPL", 
+               layer = "UPL",
+               stringsAsFactors = FALSE, 
+               verbose = FALSE)
+
+proj4string(pmo)
+
+z <- match_UPL(amat$stops_df, pmo)
+
+amat$upl <- tbl_df(cbind(stop_id = amat$stops_df$stop_id, z))
+
+# Number of stops
+uplstops <- amat$upl %>% 
+              mutate(UPL = as.numeric(UPL)) %>% 
+              group_by(UPL, nome) %>% 
+              summarise(n_stops = n()) %>%
+              arrange(desc(n_stops))
+
+head(uplstops) %>% knitr::kable()
+
+# geoDF for ggplot
+pmom <- broom::tidy(pmo, region = "UPL")
+pmom$id <- as.numeric(pmom$id)
+
+```
+
+# Number of stations per UPL
+
+```{r map_upl,  fig.width=7, fig.height=7}
+
+map_upl(pmom, uplstops)
+
+```
+
+# Import Population 2011
+
+```{r read_upl_2011}
+
+read_upl <- function(df){
+
+  x <- read_csv(df) %>%
+       arrange(UPL) %>%
+       as.data.frame()
+
+  # set new colnames
+  y0 <- sprintf("%02.0f", seq(0, 70, by = 5))
+  y1 <- sprintf("%02.0f", seq(5, 75, by = 5))
+  y <- paste(y0, y1, sep = "u")
+  y <- paste0("a", y)
+  y <- c("UPL", "UPLDESCRIZIONE", y, "a75u", "tot")
+  colnames(x) <- y
+
+  # Mean Age
+  z <- seq(2, 80, 5) + 0.5
+  x$m_age <- round(rowSums(x[, 3:18] * z) / x$tot, 1)
+
+  return(x)
+
+}
+
+xupl <- read_upl("../dati/comunePalermo/UPL/Popolazione per Upl al censimento 2011.csv")
+
+head(xupl) %>% knitr::kable()
+
+summary(xupl$m_age)
+
+```
+
+# Mean age for UPL regions
+
+```{r map_mean_age, fig.width=7, fig.height=7}
+
+# merge data
+pmom <- left_join(pmom, xupl, by=c('id'='UPL'))
+
+ggplot() +
+  geom_polygon(data = pmom, 
+               aes(x=long, y=lat, group=group, fill = m_age), color = "white") +
+  coord_map() +
+  scale_fill_viridis() +
+  ggtitle("Mean age 2011 - Le Unità di Primo Livello (UPL)")
+
+```
+
+# Prepare the data, direction_id = '1'
+
+```{r}
+
+agg_wait <- function(amat, serviceid, directionid, twindow = c(0:23)) {
+
+  z <- tbl_df(amat$trips_df) %>%
+       filter(service_id == serviceid, direction_id %in% directionid) %>%
+       select(trip_id) %>%
+       distinct()
+  
+  z1 <- amat$stop_times_df[amat$stop_times_df$trip_id %in% z$trip_id, ]
+  
+  z1$ix <- as.numeric(substring(z1$arrival_time, 1, 2))
+  
+  z1 <- tbl_df(z1) %>%
+         filter(ix %in% twindow) %>%
+         mutate(arrival_time = set_date(arrival_time)) %>% 
+         arrange(arrival_time, stop_id)
+  
+  z2 <- z1 %>%
+        mutate(tb = as.POSIXct(cut(arrival_time, breaks = "60 min"))) %>% 
+        group_by(stop_id) %>%
+        mutate(t_diff = arr_t_diff(arrival_time)) %>%
+        ungroup() %>%
+        arrange(stop_id, arrival_time)
+
+  return(z2)
+
+}
+
+```
+
+## Feriale August - monday-saturday
+
+```{r}
+
+x_FR <- agg_wait(amat, serviceid = "FR_merged_80005", directionid = 1)
+x_FR <- x_FR %>% 
+        group_by(stop_id) %>%
+        summarise(n = n(),
+                  x_mean = round(mean(t_diff, na.rm = TRUE), 1)) %>%
+        ungroup()
+head(x_FR) %>% knitr::kable()
+sum(x_FR$n)
+
+# http://indicators.report/indicators/i-67/
+st_20min <- filter(x_FR, x_mean <= 20) 
+st_20min
+
+```
+
+## raster (WIP)
+
+```{r raster_plot, fig.width=7, fig.height=7}
+
+df <- na.omit(x_FR)
+
+stops <- tbl_df(amat$stops_df) %>%
+                dplyr::select(stop_id, stop_lat, stop_lon, stop_name)
+
+xp <- inner_join(stops, df, by = "stop_id") %>%
+      rename(longitude = stop_lon, 
+             latitude  = stop_lat) %>%
+      as.data.frame()
+
+coordinates(xp) <- ~longitude+latitude
+
+rast <- raster::raster(nrows = 20, ncols = 20, 
+               xmn = 13.25,
+               xmx = 13.38,
+               ymn = 38.06,
+               ymx = 38.22,
+               crs = "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")
+
+rp <- raster::rasterize(xp, rast, field=xp$n, fun = 'sum')
+
+plot(rp, legend.width = 1, legend.shrink = 1)
+points(xp, pch = 21, cex = sqrt(xp$n/100))
+
+```
+
+### Cluster
+
+```{r heatmap, eval = FALSE, include = FALSE, fig.width=9, fig.height=7}
+
+heatm <- function(x, max_mean) {
+
+  ix <- unique(x[x$x_mean > max_mean & 
+                 !is.na(x$x_mean), "stop_id"])$stop_id
+  x <- x[!x$stop_id %in% ix, ]
+  x$n <- NULL
+  x <- spread(x, stop_id, x_mean)
+  x <- data.frame(x)
+  rownames(x) <- substring(x[, 1], 12, 16)
+  x <- x[, -1]
+  x[is.na(x)] <- 0
+  heatmap.2(as.matrix(x), 
+             col = "bluered",
+             Rowv = FALSE,
+             dendrogram = "column",
+             trace = "none") -> h1
+  return(h1)
+
+}
+
+x_FRh <- agg_wait(amat, serviceid = "FR_merged_80005", directionid = 1)
+x_FRh <- x_FRh %>% 
+        select(stop_id, tb, t_diff) %>%
+        group_by(stop_id, tb) %>%
+        summarise(n = n(),
+                  x_mean = round(mean(t_diff, na.rm = TRUE), 1)) %>%
+        ungroup()
+h1 <- heatm(x_FRh, max_mean = 60)
+
+```
+
+## Festivo August - sunday
+
+```{r}
+
+x_FE <- agg_wait(amat, serviceid = "FE_merged_80006", directionid = 1)
+x_FE <- x_FE %>% 
+        group_by(stop_id) %>%
+        summarise(n = n(),
+                  x_mean = round(mean(t_diff, na.rm = TRUE), 1)) %>%
+        ungroup()
+head(x_FE) %>% knitr::kable()
+sum(x_FE$n)
+
+```
+
+# Number of stops per station and "waiting time" in minutes (mean)
+
+```{r fn_freq_map}
+
+freq_map <- function(amat, df) {
+
+  stops <- amat$stops_df %>% 
+            select(stop_id, stop_lat, stop_lon, stop_name)
+  
+  z <- inner_join(stops, df, by = "stop_id")
+  z <- sp::SpatialPointsDataFrame(cbind("longitude" = z$stop_lon, 
+                                         "latitude" = z$stop_lat), z)
+  
+  popup <- paste0("Stop_id: ", z$stop_id, "<br>",
+                  " Stazione: ", z$stop_name, "<br>",
+                  " No_of_stops: ", z$n, "<br>", 
+                  " Waiting time in min (mean): ", z$x_mean)
+
+  leaflet(z) %>% 
+       setView(lng = 13.37, lat = 38.14, zoom = 12) %>%
+       addTiles() %>% 
+       addCircleMarkers(
+         radius = ~sqrt(x_mean),
+         color = "blue",
+         stroke = FALSE, 
+         fillOpacity = 0.5,
+         popup = popup)
+}
+
+```
+
+## Feriale - 0-24
+
+```{r map_fr, fig.width=9, fig.height=7}
+
+freq_map(amat, x_FR)
+
+```
+
+## Feriale - 18-24
+
+```{r map_fe_7_19, fig.width=9, fig.height=7}
+
+x_FRt <- agg_wait(amat, serviceid = "FR_merged_80005", directionid = 1, twindow = c(18:23))
+x_FRt <- x_FRt %>% 
+        group_by(stop_id) %>%
+        summarise(n = n(),
+                  x_mean = round(mean(t_diff, na.rm = TRUE), 1)) %>%
+        ungroup()
+freq_map(amat, x_FRt)
+
+```
+
+## Festivo
+
+```{r map_fe, fig.width=9, fig.height=7}
+
+freq_map(amat, x_FE)
+
+```
+
+# Cluster 'waiting time'
+
+```{r cl, eval = TRUE, cache = FALSE}
+
+(cl_1 <- cl_int(x_FR$x_mean))
+plot(cl_1, pal = c("wheat1", "red3"))
+
+(cl_2 <- cl_int(x_FE$x_mean))
+plot(cl_2, pal = c("wheat1", "red3"))
+
+```
+
+# Compare
+
+```{r com, eval = TRUE}
+
+z <- left_join(x_FR, x_FE, by="stop_id")
+head(z) %>% knitr::kable()
+
+```
+
+# Hexbin
+
+```{r hexbin}
+
+pl_hexbin <- function(amat, df, weight) {
+
+  df <- na.omit(df)
+
+  if (weight == "n") {
+      w = round(df$n, 0)
+  } else {
+      w = round(df$x_mean, 0)  
+  }
+  
+  stops <- tbl_df(amat$stops_df) %>%
+             select(stop_id, stop_lat, stop_lon, stop_name)
+  z <- inner_join(stops, df, by = "stop_id")
+  
+  lon <- rep(z$stop_lon, w)
+  lat <- rep(z$stop_lat, w)
+  x <- data.frame(lon, lat, 1)
+  x <- sp::SpatialPointsDataFrame(cbind("longitude" = x$lon,
+                                        "latitude"  = x$lat), x)
+  
+  figure(width = 650, height = 600) %>% 
+    ly_hexbin(x$longitude, x$latitude)
+}
+
+```
+
+## by stops
+
+```{r hexbin_stops, fig.width=9, fig.height=7}
+
+pl_hexbin(amat, x_FR, weight = "n")
+
+```
+
+## by 'waiting time'
+
+```{r hexbin_wait, fig.width=9, fig.height=7}
+
+pl_hexbin(amat, x_FR, weight = "x_mean")
+
+```
+
+# Adding buffers (WIP)
+
+## Around each station (200m)
+
+```{r calc_buffer, fig.width=9, fig.height=9}
+
+add_buf <- function(dat, bufWidth) {
+ 
+  # http://jwhollister.com/iale_open_science/2015/07/05/03-Spatial-Data-In-R/  
+  d <- SpatialPointsDataFrame(coords = dat[, c("longitude", "latitude")],
+                              data = dat,
+                              proj4string = CRS("+init=epsg:4326"))
+  
+  # http://gis.stackexchange.com/a/136285
+  # reproject to Google Mercator (meters)
+  d_mrc <- spTransform(d, CRS = CRS("+init=epsg:3857"))
+
+  # see for 'byid' 
+  # http://bit.ly/2aGi0MP
+  d_bff <- gBuffer(d_mrc, byid = TRUE, width = bufWidth)
+  d_bff <- SpatialPolygonsDataFrame(d_bff, d@data)
+  d_bff@data$BufferWidthM <- bufWidth
+  
+  # reproject to ...
+  d_bff_rp <- spTransform(d_bff, CRS("+init=epsg:4326"))
+  d_bff_rp_ft <- broom::tidy(d_bff_rp)
+  
+  return(d_bff_rp_ft)
+  
+}
+
+dat <- tbl_df(amat$stops_df) %>%
+         select(stop_lon, stop_lat, stop_id, stop_name) %>%
+         rename(longitude = stop_lon, latitude = stop_lat) %>%
+         as.data.frame()
+
+buf_dat <- add_buf(dat, 200)
+
+```
+
+```{r buffer_all, eval = TRUE, fig.width=9, fig.height=9}
+
+map_buf(dat_poly = pmom, 
+        dat_path = buf_dat,
+        dat_point = dat, 
+        title = "200m Buffer around each station")
+
+```
+
+## Around stations with a transit frequency <= 20min
+
+NOT sure if correct!
+
+```{r buffer_sp20, eval = TRUE, fig.width=9, fig.height=9}
+
+# http://indicators.report/indicators/i-67/
+buf_dat_st20 <- filter(buf_dat, id %in% st_20min$stop_id)
+
+map_buf(dat_path = buf_dat_st20,
+        dat_poly = pmom, 
+        dat_point = dat, 
+        title = "200m Buffer around each station, transit frequency <= 20min")
+
+```
+
+```{r rsession}
+
+devtools::session_info()
+
+```
