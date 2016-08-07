@@ -1,7 +1,6 @@
 --- 
 title: "GTFS Palermo"
 author: "Patrick Hausmann"
-date: "`r format(Sys.time(), '%a %b %d %X %Y')`"
 output:
   html_document:
     css: style.css
@@ -21,6 +20,7 @@ always_allow_html: yes
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(stringsAsFactors = FALSE, knitr.table.format = 'markdown')
 ```
 
 # Load some libraries
@@ -159,7 +159,7 @@ uplstops <- amat$upl %>%
               summarise(n_stops = n()) %>%
               arrange(desc(n_stops))
 
-head(uplstops) %>% knitr::kable()
+knitr::kable(head(uplstops))
 
 # geoDF for ggplot
 pmom <- broom::tidy(pmo, region = "UPL")
@@ -203,7 +203,7 @@ read_upl <- function(df){
 
 xupl <- read_upl("../dati/comunePalermo/UPL/Popolazione per Upl al censimento 2011.csv")
 
-head(xupl) %>% knitr::kable()
+knitr::kable(head(xupl))
 
 summary(xupl$m_age)
 
