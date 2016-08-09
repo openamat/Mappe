@@ -12,7 +12,7 @@ output:
     toc: yes
     toc_depth: 3
   github_document:
-    html_preview: yes
+    html_preview: no
     toc: yes
     toc_depth: 3
 always_allow_html: yes
@@ -43,6 +43,7 @@ library('rgeos')
 library('sp')
 library('tidyr')
 library('viridis')
+library('tigris')
 
 ```
 
@@ -172,6 +173,38 @@ pmom$id <- as.numeric(pmom$id)
 ```{r map_upl,  fig.width=7, fig.height=7}
 
 map_upl(pmom, uplstops)
+
+```
+
+## with `leaflet`
+
+```{r leaflet_uplstops, fig.width = 7, fig.height = 7}
+
+# from Zev Ross - http://bit.ly/2aJ1yxJ 
+pmo_stops <- tigris::geo_join(pmo, uplstops, "UPL", "UPL")
+
+popup <- paste0("UDL nome: ", pmo_stops$nome, "<br>",
+                "No of stations: ", round(pmo_stops$n_stops, 0))
+
+pal <- colorNumeric(
+  palette = viridis(12),
+  domain = pmo_stops$n_stops
+)
+
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addPolygons(data = pmo_stops,
+              fillColor = ~pal(n_stops),
+              color = "#b2aeae",
+              fillOpacity = 0.7,
+              weight = 1, 
+              smoothFactor = 0.2,
+              popup = popup) %>%
+  addLegend(pal = pal, 
+            values = pmo_stops$n_stops,
+            position = "bottomright", 
+            title = "No of stations",
+            labFormat = labelFormat(suffix = ""))
 
 ```
 
